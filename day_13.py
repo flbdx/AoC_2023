@@ -47,45 +47,7 @@ def read_inputs(inputs):
     
     return grids
 
-
-def work_p1(inputs):
-    ret = 0
-    grids = read_inputs(inputs)
-    for grid, size_x, size_y in grids:
-        for test_col in range(1, size_x):
-            test_width = min(test_col, size_x - test_col)
-            ok = True
-            for col in range(test_width):
-                if not ok:
-                    break
-                for y in range(size_y):
-                    if grid[(test_col-col-1, y)] != grid[(test_col+col, y)]:
-                        ok = False
-                        break
-            if ok:
-                ret += test_col
-                break
-        
-        if ok:
-            continue
-
-        for test_row in range(1, size_y):
-            test_width = min(test_row, size_y - test_row)
-            ok = True
-            for row in range(test_width):
-                if not ok:
-                    break
-                for x in range(size_x):
-                    if grid[(x, test_row-row-1)] != grid[(x, test_row+row)]:
-                        ok = False
-                        break
-            if ok:
-                ret += test_row * 100
-                break
-    
-    return ret
-
-def work_p2(inputs):
+def work(inputs, difference=0):
     ret = 0
     grids = read_inputs(inputs)
     for grid, size_x, size_y in grids:
@@ -95,11 +57,12 @@ def work_p2(inputs):
             matching = 0
             total = 0
             for col in range(test_width):
-                for y in range(size_y):
-                    total += 1
-                    matching += 1 if grid[(test_col-col-1, y)] == grid[(test_col+col, y)] else 0
+                total += size_y
+                matching += sum(1 if grid[(test_col-col-1, y)] == grid[(test_col+col, y)] else 0 for y in range(size_y))
+                if total-matching > difference:
+                    break
             
-            if total - matching == 1:
+            if total - matching == difference:
                 ok = True
                 ret += test_col
                 break
@@ -112,15 +75,22 @@ def work_p2(inputs):
             matching = 0
             total = 0
             for row in range(test_width):
-                for x in range(size_x):
-                    total += 1
-                    matching += 1 if grid[(x, test_row-row-1)] == grid[(x, test_row+row)] else 0
+                total += size_x
+                matching += sum(1 if grid[(x, test_row-row-1)] == grid[(x, test_row+row)] else 0 for x in range(size_x))
+                if total-matching > difference:
+                    break
 
-            if total - matching == 1: 
+            if total - matching == difference: 
                 ret += test_row * 100
                 break
     
     return ret
+
+def work_p1(inputs):
+    return work(inputs, 0)
+
+def work_p2(inputs):
+    return work(inputs, 1)
 
 
 def test_p1():
