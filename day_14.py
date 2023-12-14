@@ -18,6 +18,8 @@ O.#..O.#.#
 if len(sys.argv) == 1:
     sys.argv += ["input_14"]
 
+real_input = list(fileinput.input())
+
 def read_inputs(inputs):
     grid = {}
     for y, line in enumerate(inputs):
@@ -36,14 +38,13 @@ def tilt_north(grid, size_x, size_y):
             p = x + y * 1j
             if grid.get(p, None) != 'O':
                 continue
+            move = p
             for yup in range(y-1, -1, -1):
-                pup = x + (yup) * 1j
-                if grid.get(pup, None) == '.':
-                    grid[pup] = 'O'
-                    grid[p] = '.'
-                    p = pup
+                if grid.get(x + yup * 1j, None) == '.':
+                    move -= 1j
                 else:
                     break
+            grid[move], grid[p] = grid[p], grid[move]
 
 def tilt_west(grid, size_x, size_y):
     for x in range(1, size_x):
@@ -51,14 +52,13 @@ def tilt_west(grid, size_x, size_y):
             p = x + y * 1j
             if grid.get(p, None) != 'O':
                 continue
+            move = p
             for xlft in range(x-1, -1, -1):
-                plft = xlft + y * 1j
-                if grid.get(plft, None) == '.':
-                    grid[plft] = 'O'
-                    grid[p] = '.'
-                    p = plft
+                if grid.get(xlft + y * 1j, None) == '.':
+                    move -= 1
                 else:
                     break
+            grid[move], grid[p] = grid[p], grid[move]
 
 def tilt_south(grid, size_x, size_y):
     for y in range(size_y-2, -1, -1):
@@ -66,14 +66,13 @@ def tilt_south(grid, size_x, size_y):
             p = x + y * 1j
             if grid.get(p, None) != 'O':
                 continue
+            move = p
             for ydwn in range(y+1, size_y):
-                pdwn = x + ydwn * 1j
-                if grid.get(pdwn, None) == '.':
-                    grid[pdwn] = 'O'
-                    grid[p] = '.'
-                    p = pdwn
+                if grid.get(x + ydwn * 1j, None) == '.':
+                    move += 1j
                 else:
                     break
+            grid[move], grid[p] = grid[p], grid[move]
 
 def tilt_east(grid, size_x, size_y):
     for x in range(size_x-2, -1, -1):
@@ -81,14 +80,13 @@ def tilt_east(grid, size_x, size_y):
             p = x + y * 1j
             if grid.get(p, None) != 'O':
                 continue
+            move = p
             for xrgt in range(x+1, size_x):
-                prgt = xrgt + y * 1j
-                if grid.get(prgt, None) == '.':
-                    grid[prgt] = 'O'
-                    grid[p] = '.'
-                    p = prgt
+                if grid.get(xrgt + y * 1j, None) == '.':
+                    move += 1
                 else:
                     break
+            grid[move], grid[p] = grid[p], grid[move]
 
 def tilt_cycle(grid, size_x, size_y):
     tilt_north(grid, size_x, size_y)
@@ -146,7 +144,7 @@ def test_p1():
 test_p1()
 
 def p1():
-    print(work_p1(fileinput.input()))
+    print(work_p1(real_input))
 p1()
 
 def test_p2():
@@ -154,5 +152,5 @@ def test_p2():
 test_p2()
 
 def p2():
-    print(work_p2(fileinput.input()))
+    print(work_p2(real_input))
 p2()
