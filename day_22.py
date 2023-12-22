@@ -109,14 +109,13 @@ def work_p1(inputs):
     bricks = list(sorted(bricks, key=lambda b: b.get_min_z()))
 
     safe_bricks = 0
-    for brick in bricks:
+    for i in range(len(bricks)):
+        brick = bricks[i]
         brick.disintegrate()
         safe = True
-        for other_brick in bricks:
-            if other_brick == brick:
-                continue
-            n = other_brick.can_fall()
-            if n > 0:
+        for j in range(i+1, len(bricks)):
+            other_brick = bricks[j]
+            if other_brick.can_fall() > 0:
                 safe = False
                 break
         brick.rebuild()
@@ -137,30 +136,27 @@ def work_p2(inputs):
 
     for brick in bricks:
         brick.fall()
-        
-    for brick in bricks:
         brick.save_position()
     
     bricks = list(sorted(bricks, key=lambda b: b.get_min_z()))
     
     ret = 0
-    for brick in bricks:
+    for i in range(len(bricks)):
+        brick = bricks[i]
         brick.disintegrate()
-        n_fall = 0
-        for b in bricks:
-            if b == brick:
-                continue
-            n = b.fall()
-            if n > 0:
-                n_fall += 1
-        ret += n_fall
+        fallen = []
+        for j in range(i+1, len(bricks)):
+            other_brick = bricks[j]
+            if other_brick.fall() > 0:
+                fallen.append(other_brick)
+        ret += len(fallen)
 
-        # for b in bricks:
-        #     b.disintegrate()
-        world.clear()
-        for b in bricks:
+        for b in fallen:
+            b.disintegrate()
+        for b in fallen:
             b.restore_position()
             b.rebuild()
+        brick.rebuild()
     
     return ret
 
