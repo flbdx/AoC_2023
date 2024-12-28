@@ -3,7 +3,6 @@
 
 import fileinput
 import sys
-# import networkx as nx
 from collections import deque
 
 test_input="""#.#####################
@@ -101,39 +100,73 @@ def work_p1(inputs):
 def work_p2(inputs):
     grid, size_x, size_y, src_point, dst_point = read_inputs(inputs)
 
-    point_to_bit = lambda p: 1<<(p[1]*size_x + p[0])
-
-    walls = 0
-    for p, c in grid.items():
-        if c == '#':
-            walls |= point_to_bit(p)
+    graph = {}
+    graph[src_point] = []
+    graph[dst_point] = []
 
     queue = deque()
-    queue.append((src_point, point_to_bit(src_point)))
-
-    best = 0
+    queue.append(src_point)
+    visited = set()
+    visited.add(src_point)
 
     while len(queue) > 0:
-        p, visited = queue.pop()
+        node = queue.pop()
+        queue2 = deque()
+        queue2.append((node, node, 0))
+
+        while len(queue2) > 0:
+            n, prev, s = queue2.pop()
+
+            if n != prev and n in (src_point, dst_point):
+                graph.setdefault(node, []).append((n, s))
+                if not n in visited:
+                    visited.add(n)
+                    queue.append(n)
+                continue
+
+            neighboors = []
+            for d in ((1,0),(-1,0),(0,1),(0,-1)):
+                np = (n[0] + d[0], n[1] + d[1])
+                if np[0] < 0 or np[0] >= size_x or np[1] < 0 or np[1] >= size_y or grid[np] == '#':
+                    continue
+                neighboors.append(np)
+            
+            if (n != prev and len(neighboors) >= 3):
+                graph.setdefault(node, []).append((n, s))
+                if not n in visited:
+                    visited.add(n)
+                    queue.append(n)
+            else:
+                for neigh in neighboors:
+                    if neigh != prev:
+                        queue2.append((neigh, n, s+1))
+
+    # for n, neighboors in graph.items():
+    #     print(f"{n}:")
+    #     for ngh,s in neighboors:
+    #         print(f"  {ngh} : {s}")
+    # print(len(graph))
+
+    point_to_bit = lambda p: 1<<(p[1]*size_x + p[0])
+    best = 0
+    queue = deque()
+    queue.append((src_point, 0, point_to_bit(src_point)))
+
+    while len(queue) > 0:
+        p, s, visited = queue.pop()
 
         if p == dst_point:
-            l = int(visited).bit_count()
-            if l > best:
-                best = l
-                print(best-1)
+            if s > best:
+                best = s
             continue
 
-
-        for d in ((1,0),(-1,0),(0,1),(0,-1)):
-            np = (p[0] + d[0], p[1] + d[1])
-            if np[0] < 0 or np[1] < 0 or np[0] >= size_x or np[1] >= size_y:
+        for neigh, dist in graph.get(p, []):
+            b = point_to_bit(neigh)
+            if (b & visited) != 0:
                 continue
-            npb = point_to_bit(np)
-            if (npb & walls != 0) or (npb & visited != 0):
-                continue
-            queue.append((np, visited | npb))
-
-    return best - 1
+            queue.append((neigh, s + dist, visited | b))
+    
+    return best
 
 def test_p1():
     assert(work_p1(test_input) == 94)
